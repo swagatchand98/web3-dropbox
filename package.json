@@ -1,0 +1,47 @@
+{
+  "name": "web3-dropbox",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build --turbopack",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@coinbase/wallet-sdk": "^4.3.7",
+    "@helia/unixfs": "^5.1.0",
+    "@openzeppelin/contracts": "^5.4.0",
+    "@rainbow-me/rainbowkit": "^2.2.8",
+    "@storacha/client": "^1.7.10",
+    "@tanstack/react-query": "^5.89.0",
+    "@web3-storage/w3up-client": "^17.3.0",
+    "ethers": "^6.15.0",
+    "firebase": "^12.2.1",
+    "framer-motion": "^12.23.13",
+    "hardhat": "^3.0.6",
+    "helia": "^5.5.1",
+    "ipfs-http-client": "^60.0.1",
+    "lucide-react": "^0.544.0",
+    "next": "15.5.3",
+    "postprocessing": "^6.37.8",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-firebase-hooks": "^5.1.1",
+    "three": "^0.180.0",
+    "viem": "^2.37.6",
+    "wagmi": "^2.16.9"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/three": "^0.180.0",
+    "eslint": "^9",
+    "eslint-config-next": "15.5.3",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
