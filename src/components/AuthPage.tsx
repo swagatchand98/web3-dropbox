@@ -25,7 +25,16 @@ interface AuthPageProps {
 }
 
 export default function AuthPage({ onAuthSuccess }: AuthPageProps) {
-  const { user, loading } = useAuth();
+  const { 
+    user, 
+    loading,
+    signInWithEmail, 
+    signInWithGoogle, 
+    signInWithGitHub, 
+    signInWithTwitter, 
+    createAccountWithEmail 
+  } = useAuth();
+  
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -75,14 +84,6 @@ export default function AuthPage({ onAuthSuccess }: AuthPageProps) {
     return true;
   };
 
-  const { 
-    signInWithEmail, 
-    signInWithGoogle, 
-    signInWithGitHub, 
-    signInWithTwitter, 
-    createAccountWithEmail 
-  } = useAuth();
-
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -100,9 +101,9 @@ export default function AuthPage({ onAuthSuccess }: AuthPageProps) {
           formData.displayName
         );
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Auth error:', error);
-      setError(error.message || 'Authentication failed');
+      setError(error instanceof Error ? error.message : 'Authentication failed');
     } finally {
       setIsLoading(false);
     }
@@ -124,9 +125,9 @@ export default function AuthPage({ onAuthSuccess }: AuthPageProps) {
           await signInWithTwitter();
           break;
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Social auth error:', error);
-      setError(error.message || 'Authentication failed');
+      setError(error instanceof Error ? error.message : 'Authentication failed');
     } finally {
       setIsLoading(false);
     }

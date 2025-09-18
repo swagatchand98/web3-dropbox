@@ -1,4 +1,3 @@
-// Simple deployment script without type issues
 const hre = require("hardhat");
 
 async function main() {

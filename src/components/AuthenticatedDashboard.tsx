@@ -126,9 +126,9 @@ export default function AuthenticatedDashboard() {
     try {
       await linkWalletAddress(address);
       showNotification('success', 'Wallet linked successfully!');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error linking wallet:', error);
-      showNotification('error', error.message || 'Failed to link wallet');
+      showNotification('error', error instanceof Error ? error.message : 'Failed to link wallet');
     } finally {
       setLinkingWallet(false);
     }
@@ -214,7 +214,7 @@ export default function AuthenticatedDashboard() {
       setUploading(false);
       event.target.value = '';
     }
-  }, [user, userProfile, encryptionPassword]);
+  }, [user, userProfile, encryptionPassword, hasStorageSpace, updateStorageUsage]);
 
   const handleDownload = async (file: FileRecord) => {
     try {
@@ -544,7 +544,7 @@ export default function AuthenticatedDashboard() {
             ].map((tab, index) => (
               <motion.button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => setActiveTab(tab.id as 'files' | 'provider' | 'marketplace' | 'profile')}
                 className={`px-6 py-4 font-semibold transition-all duration-300 flex items-center space-x-2 ${
                   activeTab === tab.id
                     ? 'text-white border-b-2 border-purple-400 bg-purple-500/20'
