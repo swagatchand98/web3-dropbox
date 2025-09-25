@@ -97,6 +97,11 @@ export default function AuthenticatedDashboard() {
   const [encryptionPassword, setEncryptionPassword] = useState('');
   const [linkingWallet, setLinkingWallet] = useState(false);
   const [notification, setNotification] = useState<{type: 'success' | 'error', message: string} | null>(null);
+  const [uploadAnimation, setUploadAnimation] = useState<{
+    show: boolean;
+    phase: 'padlock' | 'splitting' | 'complete';
+    fileName: string;
+  }>({ show: false, phase: 'padlock', fileName: '' });
 
   const { writeContract } = useWriteContract();
 
@@ -145,75 +150,88 @@ export default function AuthenticatedDashboard() {
       return;
     }
 
-    setUploading(true);
-    try {
-      // Prepare file for storage (encrypt and chunk)
-      const prepared = await EncryptionService.prepareFileForStorage(
-        file,
-        encryptionPassword || undefined
-      );
+    // Start animation sequence
+    setUploadAnimation({ show: true, phase: 'padlock', fileName: file.name });
 
-      // Upload chunks to IPFS
-      const chunkHashes: string[] = [];
-      for (let i = 0; i < prepared.chunks.length; i++) {
-        const chunk = prepared.chunks[i];
-        const chunkArray = new Uint8Array(chunk);
-        const chunkBlob = new Blob([chunkArray]);
-        const chunkFile = Object.assign(chunkBlob, {
-          name: `chunk_${i}`,
-          lastModified: Date.now(),
-        }) as File;
-        const chunkHash = await uploadToIPFS(chunkFile);
-        chunkHashes.push(chunkHash);
-      }
+    // Phase 1: Show padlock for 1.5 seconds
+    setTimeout(() => {
+      setUploadAnimation(prev => ({ ...prev, phase: 'splitting' }));
 
-      // Create main metadata file
-      const metadataWithChunks = {
-        ...prepared.metadata,
-        chunkHashes,
-        userId: user.uid,
-        encryptionKey: encryptionPassword ? undefined : EncryptionService.arrayBufferToBase64(await EncryptionService.exportKey(prepared.key))
-      };
+      // Phase 2: Show splitting animation for 1 second, then start actual upload
+      setTimeout(async () => {
+        setUploadAnimation({ show: false, phase: 'complete', fileName: '' });
+        setUploading(true);
 
-      const metadataString = JSON.stringify(metadataWithChunks);
-      const metadataBlob = new Blob([metadataString]);
-      const metadataFile = Object.assign(metadataBlob, {
-        name: `${file.name}.metadata`,
-        lastModified: Date.now(),
-      }) as File;
-      const metadataHash = await uploadToIPFS(metadataFile);
+        try {
+          // Prepare file for storage (encrypt and chunk)
+          const prepared = await EncryptionService.prepareFileForStorage(
+            file,
+            encryptionPassword || undefined
+          );
 
-      // Store encryption key if password was used
-      if (encryptionPassword) {
-        await KeyManager.storeKey(metadataHash, prepared.key, encryptionPassword);
-      }
+          // Upload chunks to IPFS
+          const chunkHashes: string[] = [];
+          for (let i = 0; i < prepared.chunks.length; i++) {
+            const chunk = prepared.chunks[i];
+            const chunkArray = new Uint8Array(chunk);
+            const chunkBlob = new Blob([chunkArray]);
+            const chunkFile = Object.assign(chunkBlob, {
+              name: `chunk_${i}`,
+              lastModified: Date.now(),
+            }) as File;
+            const chunkHash = await uploadToIPFS(chunkFile);
+            chunkHashes.push(chunkHash);
+          }
 
-      // Update storage usage
-      await updateStorageUsage(file.size);
+          // Create main metadata file
+          const metadataWithChunks = {
+            ...prepared.metadata,
+            chunkHashes,
+            userId: user.uid,
+            encryptionKey: encryptionPassword ? undefined : EncryptionService.arrayBufferToBase64(await EncryptionService.exportKey(prepared.key))
+          };
 
-      // Add to local state
-      const newFile: FileRecord = {
-        id: metadataHash,
-        name: file.name,
-        size: file.size,
-        uploadDate: new Date().toLocaleDateString(),
-        ipfsHash: metadataHash,
-        isEncrypted: true,
-        chunks: prepared.chunks.length,
-        cost: '0.001', // Mock cost
-        status: 'stored'
-      };
+          const metadataString = JSON.stringify(metadataWithChunks);
+          const metadataBlob = new Blob([metadataString]);
+          const metadataFile = Object.assign(metadataBlob, {
+            name: `${file.name}.metadata`,
+            lastModified: Date.now(),
+          }) as File;
+          const metadataHash = await uploadToIPFS(metadataFile);
 
-      setFiles(prev => [...prev, newFile]);
-      showNotification('success', 'File uploaded successfully to decentralized storage!');
-      
-    } catch (error) {
-      console.error('Upload failed:', error);
-      showNotification('error', 'Upload failed. Please try again.');
-    } finally {
-      setUploading(false);
-      event.target.value = '';
-    }
+          // Store encryption key if password was used
+          if (encryptionPassword) {
+            await KeyManager.storeKey(metadataHash, prepared.key, encryptionPassword);
+          }
+
+          // Update storage usage
+          await updateStorageUsage(file.size);
+
+          // Add to local state
+          const newFile: FileRecord = {
+            id: metadataHash,
+            name: file.name,
+            size: file.size,
+            uploadDate: new Date().toLocaleDateString(),
+            ipfsHash: metadataHash,
+            isEncrypted: true,
+            chunks: prepared.chunks.length,
+            cost: '0.001', // Mock cost
+            status: 'stored'
+          };
+
+          setFiles(prev => [...prev, newFile]);
+          showNotification('success', 'File uploaded successfully to decentralized storage!');
+
+        } catch (error) {
+          console.error('Upload failed:', error);
+          showNotification('error', 'Upload failed. Please try again.');
+        } finally {
+          setUploading(false);
+          event.target.value = '';
+        }
+      }, 1000);
+    }, 1500);
   }, [user, userProfile, encryptionPassword, hasStorageSpace, updateStorageUsage]);
 
   const handleDownload = async (file: FileRecord) => {
@@ -383,10 +401,10 @@ export default function AuthenticatedDashboard() {
       {/* Notification */}
       <AnimatePresence>
         {notification && (
-          <motion.div 
+          <motion.div
             className={`fixed top-6 right-6 z-50 p-4 rounded-xl shadow-2xl flex items-center backdrop-blur-xl border ${
-              notification.type === 'success' 
-                ? 'bg-green-500/10 text-green-200 border-green-500/30' 
+              notification.type === 'success'
+                ? 'bg-green-500/10 text-green-200 border-green-500/30'
                 : 'bg-red-500/10 text-red-200 border-red-500/30'
             }`}
             initial={{ opacity: 0, x: 100, scale: 0.8 }}
@@ -400,6 +418,306 @@ export default function AuthenticatedDashboard() {
               <AlertCircle className="w-5 h-5 mr-3 text-red-400" />
             )}
             {notification.message}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Upload Animation Overlay */}
+      <AnimatePresence>
+        {uploadAnimation.show && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="text-center">
+              {uploadAnimation.phase === 'padlock' && (
+                <motion.div
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.5, opacity: 0 }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  className="mb-6"
+                >
+                  <motion.div
+                    animate={{
+                      y: [0, -10, 0],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                    className="w-24 h-24 bg-gradient-to-r from-purple-500 to-cyan-400 rounded-full flex items-center justify-center mx-auto shadow-2xl"
+                  >
+                    <Lock className="w-12 h-12 text-white" />
+                  </motion.div>
+                  <motion.p
+                    className="text-white text-xl font-semibold mt-4"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    Encrypting {uploadAnimation.fileName}
+                  </motion.p>
+                  <motion.p
+                    className="text-gray-300 text-sm mt-2"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                  >
+                    Securing your file with military-grade encryption
+                  </motion.p>
+                </motion.div>
+              )}
+
+              {uploadAnimation.phase === 'splitting' && (
+                <motion.div
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.5, opacity: 0 }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  className="mb-6"
+                >
+                  <motion.div
+                    className="relative w-32 h-32 mx-auto"
+                    initial={{ rotate: 0 }}
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                  >
+                    {/* Multi-directional splitting animation */}
+                    {/* Top chunk */}
+                    <motion.div
+                      className="absolute top-0 left-1/2 transform -translate-x-1/2"
+                      initial={{ y: 0, x: 0, scale: 1 }}
+                      animate={{
+                        y: [-100, -200, -300],
+                        x: [0, -50, -100],
+                        scale: [1, 0.5, 0.1],
+                        rotate: [0, 180, 360]
+                      }}
+                      transition={{
+                        duration: 4,
+                        repeat: Infinity,
+                        ease: "easeIn",
+                        delay: 0
+                      }}
+                    >
+                      <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-cyan-400 rounded-full flex items-center justify-center shadow-xl">
+                        <Lock className="w-4 h-4 text-white" />
+                      </div>
+                    </motion.div>
+
+                    {/* Bottom chunk */}
+                    <motion.div
+                      className="absolute bottom-0 left-1/2 transform -translate-x-1/2"
+                      initial={{ y: 0, x: 0, scale: 1 }}
+                      animate={{
+                        y: [100, 200, 300],
+                        x: [0, 30, 60],
+                        scale: [1, 0.5, 0.1],
+                        rotate: [0, -180, -360]
+                      }}
+                      transition={{
+                        duration: 4,
+                        repeat: Infinity,
+                        ease: "easeIn",
+                        delay: 0.3
+                      }}
+                    >
+                      <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-cyan-400 rounded-full flex items-center justify-center shadow-xl">
+                        <Lock className="w-4 h-4 text-white" />
+                      </div>
+                    </motion.div>
+
+                    {/* Left chunk */}
+                    <motion.div
+                      className="absolute top-1/2 left-0 transform -translate-y-1/2"
+                      initial={{ x: 0, y: 0, scale: 1 }}
+                      animate={{
+                        x: [-100, -200, -300],
+                        y: [0, -40, -80],
+                        scale: [1, 0.5, 0.1],
+                        rotate: [0, 270, 540]
+                      }}
+                      transition={{
+                        duration: 4,
+                        repeat: Infinity,
+                        ease: "easeIn",
+                        delay: 0.6
+                      }}
+                    >
+                      <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-cyan-400 rounded-full flex items-center justify-center shadow-xl">
+                        <Lock className="w-4 h-4 text-white" />
+                      </div>
+                    </motion.div>
+
+                    {/* Right chunk */}
+                    <motion.div
+                      className="absolute top-1/2 right-0 transform -translate-y-1/2"
+                      initial={{ x: 0, y: 0, scale: 1 }}
+                      animate={{
+                        x: [100, 200, 300],
+                        y: [0, 40, 80],
+                        scale: [1, 0.5, 0.1],
+                        rotate: [0, -270, -540]
+                      }}
+                      transition={{
+                        duration: 4,
+                        repeat: Infinity,
+                        ease: "easeIn",
+                        delay: 0.9
+                      }}
+                    >
+                      <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-cyan-400 rounded-full flex items-center justify-center shadow-xl">
+                        <Lock className="w-4 h-4 text-white" />
+                      </div>
+                    </motion.div>
+
+                    {/* Top-right diagonal chunk */}
+                    <motion.div
+                      className="absolute top-0 right-0"
+                      initial={{ x: 0, y: 0, scale: 1 }}
+                      animate={{
+                        x: [70, 150, 250],
+                        y: [-70, -150, -250],
+                        scale: [1, 0.4, 0.1],
+                        rotate: [0, 135, 270]
+                      }}
+                      transition={{
+                        duration: 4,
+                        repeat: Infinity,
+                        ease: "easeIn",
+                        delay: 0.2
+                      }}
+                    >
+                      <div className="w-6 h-6 bg-gradient-to-r from-purple-500 to-cyan-400 rounded-full flex items-center justify-center shadow-lg">
+                        <Lock className="w-3 h-3 text-white" />
+                      </div>
+                    </motion.div>
+
+                    {/* Bottom-left diagonal chunk */}
+                    <motion.div
+                      className="absolute bottom-0 left-0"
+                      initial={{ x: 0, y: 0, scale: 1 }}
+                      animate={{
+                        x: [-70, -150, -250],
+                        y: [70, 150, 250],
+                        scale: [1, 0.4, 0.1],
+                        rotate: [0, -135, -270]
+                      }}
+                      transition={{
+                        duration: 4,
+                        repeat: Infinity,
+                        ease: "easeIn",
+                        delay: 0.5
+                      }}
+                    >
+                      <div className="w-6 h-6 bg-gradient-to-r from-purple-500 to-cyan-400 rounded-full flex items-center justify-center shadow-lg">
+                        <Lock className="w-3 h-3 text-white" />
+                      </div>
+                    </motion.div>
+
+                    {/* Top-left diagonal chunk */}
+                    <motion.div
+                      className="absolute top-0 left-0"
+                      initial={{ x: 0, y: 0, scale: 1 }}
+                      animate={{
+                        x: [-50, -120, -200],
+                        y: [-50, -120, -200],
+                        scale: [1, 0.3, 0.05],
+                        rotate: [0, 225, 450]
+                      }}
+                      transition={{
+                        duration: 4,
+                        repeat: Infinity,
+                        ease: "easeIn",
+                        delay: 0.1
+                      }}
+                    >
+                      <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-cyan-400 rounded-full flex items-center justify-center shadow-md">
+                        <Lock className="w-2.5 h-2.5 text-white" />
+                      </div>
+                    </motion.div>
+
+                    {/* Bottom-right diagonal chunk */}
+                    <motion.div
+                      className="absolute bottom-0 right-0"
+                      initial={{ x: 0, y: 0, scale: 1 }}
+                      animate={{
+                        x: [50, 120, 200],
+                        y: [50, 120, 200],
+                        scale: [1, 0.3, 0.05],
+                        rotate: [0, -225, -450]
+                      }}
+                      transition={{
+                        duration: 4,
+                        repeat: Infinity,
+                        ease: "easeIn",
+                        delay: 0.7
+                      }}
+                    >
+                      <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-cyan-400 rounded-full flex items-center justify-center shadow-md">
+                        <Lock className="w-2.5 h-2.5 text-white" />
+                      </div>
+                    </motion.div>
+
+                    {/* Center explosion effect */}
+                    <motion.div
+                      className="absolute inset-0 flex items-center justify-center"
+                      initial={{ scale: 1, opacity: 1 }}
+                      animate={{
+                        scale: [1, 2, 4, 0],
+                        opacity: [1, 0.8, 0.4, 0]
+                      }}
+                      transition={{
+                        duration: 3.5,
+                        repeat: Infinity,
+                        ease: "easeOut"
+                      }}
+                    >
+                      <div className="w-20 h-20 border-2 border-purple-400/60 rounded-full"></div>
+                    </motion.div>
+
+                    {/* Secondary explosion ring */}
+                    <motion.div
+                      className="absolute inset-0 flex items-center justify-center"
+                      initial={{ scale: 1, opacity: 0.5 }}
+                      animate={{
+                        scale: [1, 1.5, 3, 0],
+                        opacity: [0.5, 0.8, 0.2, 0]
+                      }}
+                      transition={{
+                        duration: 4,
+                        repeat: Infinity,
+                        ease: "easeOut",
+                        delay: 0.5
+                      }}
+                    >
+                      <div className="w-12 h-12 border border-cyan-400/40 rounded-full"></div>
+                    </motion.div>
+                  </motion.div>
+                  <motion.p
+                    className="text-white text-xl font-semibold mt-4"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    Splitting into chunks
+                  </motion.p>
+                  <motion.p
+                    className="text-gray-300 text-sm mt-2"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                  >
+                    Distributing across decentralized network
+                  </motion.p>
+                </motion.div>
+              )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
