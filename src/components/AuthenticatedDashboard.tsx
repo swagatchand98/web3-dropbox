@@ -102,6 +102,18 @@ export default function AuthenticatedDashboard() {
     phase: 'padlock' | 'splitting' | 'complete';
     fileName: string;
   }>({ show: false, phase: 'padlock', fileName: '' });
+  
+  // Storage Provider Form State
+  const [providerForm, setProviderForm] = useState({
+    availableStorage: '',
+    pricePerGB: '',
+    endpoint: '',
+    description: '',
+    location: ''
+  });
+  const [showProviderForm, setShowProviderForm] = useState(false);
+  const [registeringProvider, setRegisteringProvider] = useState(false);
+  const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
 
   const { writeContract } = useWriteContract();
 
@@ -298,32 +310,82 @@ export default function AuthenticatedDashboard() {
     }
   };
 
-  const handleRegisterAsProvider = async () => {
+  const validateProviderForm = () => {
+    const errors: {[key: string]: string} = {};
+    
+    if (!providerForm.availableStorage || parseFloat(providerForm.availableStorage) <= 0) {
+      errors.availableStorage = 'Please enter a valid storage amount';
+    }
+    
+    if (!providerForm.pricePerGB || parseFloat(providerForm.pricePerGB) <= 0) {
+      errors.pricePerGB = 'Please enter a valid price per GB';
+    }
+    
+    if (!providerForm.endpoint || !providerForm.endpoint.startsWith('http')) {
+      errors.endpoint = 'Please enter a valid IPFS endpoint URL';
+    }
+    
+    if (!providerForm.description || providerForm.description.length < 10) {
+      errors.description = 'Please provide a description (minimum 10 characters)';
+    }
+    
+    if (!providerForm.location) {
+      errors.location = 'Please specify your location';
+    }
+    
+    return errors;
+  };
+
+  const handleProviderFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
     if (!user || !isConnected) return;
 
-    const availableStorage = prompt('Enter available storage in GB:');
-    const pricePerGB = prompt('Enter price per GB per month (in tokens):');
-    const endpoint = prompt('Enter your IPFS endpoint:');
+    const errors = validateProviderForm();
+    setFormErrors(errors);
+    
+    if (Object.keys(errors).length > 0) {
+      showNotification('error', 'Please fix the form errors before submitting');
+      return;
+    }
 
-    if (!availableStorage || !pricePerGB || !endpoint) return;
-
+    setRegisteringProvider(true);
+    
     try {
       await writeContract({
         address: STORAGE_MARKET_ADDRESS,
         abi: STORAGE_MARKET_ABI,
         functionName: 'registerProvider',
         args: [
-          BigInt(parseInt(availableStorage) * 1e9),
-          BigInt(parseFloat(pricePerGB) * 1e18),
-          endpoint
+          BigInt(parseFloat(providerForm.availableStorage) * 1e9),
+          BigInt(parseFloat(providerForm.pricePerGB) * 1e18),
+          providerForm.endpoint
         ],
       });
 
       await registerAsProvider();
       showNotification('success', 'Successfully registered as storage provider!');
+      setShowProviderForm(false);
+      setProviderForm({
+        availableStorage: '',
+        pricePerGB: '',
+        endpoint: '',
+        description: '',
+        location: ''
+      });
     } catch (error) {
       console.error('Provider registration failed:', error);
       showNotification('error', 'Registration failed. Please try again.');
+    } finally {
+      setRegisteringProvider(false);
+    }
+  };
+
+  const handleProviderFormChange = (field: string, value: string) => {
+    setProviderForm(prev => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (formErrors[field]) {
+      setFormErrors(prev => ({ ...prev, [field]: '' }));
     }
   };
 
@@ -1166,43 +1228,311 @@ export default function AuthenticatedDashboard() {
               transition={{ duration: 0.5 }}
             >
               {!userProfile.isProvider ? (
-                <motion.div 
-                  className="text-center py-16"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                >
-                  <Server className="mx-auto h-20 w-20 text-purple-400 mb-6" />
-                  <h2 className="text-3xl font-bold text-white mb-4">Become a Storage Provider</h2>
-                  <p className="text-gray-300 mb-8 max-w-md mx-auto text-lg">
-                    Rent out your unused storage space and earn STOR tokens. Help build the decentralized storage network.
-                  </p>
-                  {userProfile.walletAddress ? (
-                    <motion.button
-                      onClick={handleRegisterAsProvider}
-                      className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-purple-500 to-cyan-400 text-white font-bold text-lg rounded-xl shadow-2xl border border-purple-400/30"
-                      whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(168, 85, 247, 0.3)" }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <Coins className="w-6 h-6 mr-3" />
-                      Register as Provider
-                    </motion.button>
-                  ) : (
+                <div className="max-w-4xl mx-auto">
+                  {!showProviderForm ? (
                     <motion.div 
-                      className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-6 max-w-md mx-auto backdrop-blur-sm"
+                      className="text-center py-16"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.6, delay: 0.2 }}
                     >
-                      <div className="flex items-center justify-center">
-                        <Wallet className="w-6 h-6 text-yellow-400 mr-3" />
-                        <span className="text-yellow-200 font-semibold">Connect and link your wallet first</span>
+                      <motion.div
+                        initial={{ scale: 0.8 }}
+                        animate={{ scale: 1 }}
+                        transition={{ duration: 0.5, delay: 0.3 }}
+                      >
+                        <Server className="mx-auto h-20 w-20 text-purple-400 mb-6" />
+                        <h2 className="text-3xl font-bold text-white mb-4">Become a Storage Provider</h2>
+                        <p className="text-gray-300 mb-8 max-w-2xl mx-auto text-lg">
+                          Join the decentralized storage network and earn STOR tokens by providing storage space. 
+                          Help build the future of distributed file storage while generating passive income.
+                        </p>
+                      </motion.div>
+
+                      {/* Benefits Grid */}
+                      <motion.div 
+                        className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12"
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.4 }}
+                      >
+                        <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 backdrop-blur-xl p-6 rounded-xl border border-green-500/20">
+                          <Coins className="w-12 h-12 text-green-400 mx-auto mb-4" />
+                          <h3 className="text-lg font-semibold text-white mb-2">Earn Tokens</h3>
+                          <p className="text-gray-300 text-sm">Get paid in STOR tokens for providing reliable storage space</p>
+                        </div>
+                        <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 backdrop-blur-xl p-6 rounded-xl border border-blue-500/20">
+                          <Shield className="w-12 h-12 text-blue-400 mx-auto mb-4" />
+                          <h3 className="text-lg font-semibold text-white mb-2">Build Reputation</h3>
+                          <p className="text-gray-300 text-sm">Maintain high uptime and reliability to increase earnings</p>
+                        </div>
+                        <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 backdrop-blur-xl p-6 rounded-xl border border-purple-500/20">
+                          <Users className="w-12 h-12 text-purple-400 mx-auto mb-4" />
+                          <h3 className="text-lg font-semibold text-white mb-2">Join Network</h3>
+                          <p className="text-gray-300 text-sm">Be part of the decentralized storage revolution</p>
+                        </div>
+                      </motion.div>
+
+                      {userProfile.walletAddress ? (
+                        <motion.button
+                          onClick={() => setShowProviderForm(true)}
+                          className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-purple-500 to-cyan-400 text-white font-bold text-lg rounded-xl shadow-2xl border border-purple-400/30"
+                          whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(168, 85, 247, 0.3)" }}
+                          whileTap={{ scale: 0.95 }}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.6, delay: 0.6 }}
+                        >
+                          <Server className="w-6 h-6 mr-3" />
+                          Start Registration
+                        </motion.button>
+                      ) : (
+                        <motion.div 
+                          className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-6 max-w-md mx-auto backdrop-blur-sm"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.6, delay: 0.6 }}
+                        >
+                          <div className="flex items-center justify-center">
+                            <Wallet className="w-6 h-6 text-yellow-400 mr-3" />
+                            <span className="text-yellow-200 font-semibold">Connect and link your wallet first</span>
+                          </div>
+                        </motion.div>
+                      )}
+                    </motion.div>
+                  ) : (
+                    /* Registration Form */
+                    <motion.div
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6 }}
+                    >
+                      <div className="bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-xl rounded-2xl p-8 border border-purple-500/20">
+                        <div className="flex items-center justify-between mb-8">
+                          <div>
+                            <h2 className="text-3xl font-bold text-white mb-2">Storage Provider Registration</h2>
+                            <p className="text-gray-300">Fill out the details to register as a storage provider</p>
+                          </div>
+                          <motion.button
+                            onClick={() => setShowProviderForm(false)}
+                            className="text-gray-400 hover:text-white transition-colors"
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                          >
+                            <AlertCircle className="w-6 h-6" />
+                          </motion.button>
+                        </div>
+
+                        <form onSubmit={handleProviderFormSubmit} className="space-y-6">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Available Storage */}
+                            <div>
+                              <label className="block text-sm font-semibold text-white mb-2">
+                                Available Storage (GB) *
+                              </label>
+                              <input
+                                type="number"
+                                min="1"
+                                step="0.1"
+                                value={providerForm.availableStorage}
+                                onChange={(e) => handleProviderFormChange('availableStorage', e.target.value)}
+                                className={`w-full px-4 py-3 bg-white/10 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white placeholder-gray-400 backdrop-blur-sm transition-all duration-300 ${
+                                  formErrors.availableStorage 
+                                    ? 'border-red-500/50 focus:ring-red-500' 
+                                    : 'border-purple-500/30'
+                                }`}
+                                placeholder="e.g., 100"
+                              />
+                              {formErrors.availableStorage && (
+                                <motion.p 
+                                  className="text-red-400 text-sm mt-2 flex items-center"
+                                  initial={{ opacity: 0, y: -10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                >
+                                  <AlertCircle className="w-4 h-4 mr-1" />
+                                  {formErrors.availableStorage}
+                                </motion.p>
+                              )}
+                            </div>
+
+                            {/* Price per GB */}
+                            <div>
+                              <label className="block text-sm font-semibold text-white mb-2">
+                                Price per GB/month (STOR) *
+                              </label>
+                              <input
+                                type="number"
+                                min="0.001"
+                                step="0.001"
+                                value={providerForm.pricePerGB}
+                                onChange={(e) => handleProviderFormChange('pricePerGB', e.target.value)}
+                                className={`w-full px-4 py-3 bg-white/10 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white placeholder-gray-400 backdrop-blur-sm transition-all duration-300 ${
+                                  formErrors.pricePerGB 
+                                    ? 'border-red-500/50 focus:ring-red-500' 
+                                    : 'border-purple-500/30'
+                                }`}
+                                placeholder="e.g., 0.01"
+                              />
+                              {formErrors.pricePerGB && (
+                                <motion.p 
+                                  className="text-red-400 text-sm mt-2 flex items-center"
+                                  initial={{ opacity: 0, y: -10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                >
+                                  <AlertCircle className="w-4 h-4 mr-1" />
+                                  {formErrors.pricePerGB}
+                                </motion.p>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* IPFS Endpoint */}
+                          <div>
+                            <label className="block text-sm font-semibold text-white mb-2">
+                              IPFS Endpoint URL *
+                            </label>
+                            <input
+                              type="url"
+                              value={providerForm.endpoint}
+                              onChange={(e) => handleProviderFormChange('endpoint', e.target.value)}
+                              className={`w-full px-4 py-3 bg-white/10 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white placeholder-gray-400 backdrop-blur-sm transition-all duration-300 ${
+                                formErrors.endpoint 
+                                  ? 'border-red-500/50 focus:ring-red-500' 
+                                  : 'border-purple-500/30'
+                              }`}
+                              placeholder="https://your-ipfs-node.com:5001"
+                            />
+                            {formErrors.endpoint && (
+                              <motion.p 
+                                className="text-red-400 text-sm mt-2 flex items-center"
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                              >
+                                <AlertCircle className="w-4 h-4 mr-1" />
+                                {formErrors.endpoint}
+                              </motion.p>
+                            )}
+                          </div>
+
+                          {/* Location */}
+                          <div>
+                            <label className="block text-sm font-semibold text-white mb-2">
+                              Geographic Location *
+                            </label>
+                            <input
+                              type="text"
+                              value={providerForm.location}
+                              onChange={(e) => handleProviderFormChange('location', e.target.value)}
+                              className={`w-full px-4 py-3 bg-white/10 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white placeholder-gray-400 backdrop-blur-sm transition-all duration-300 ${
+                                formErrors.location 
+                                  ? 'border-red-500/50 focus:ring-red-500' 
+                                  : 'border-purple-500/30'
+                              }`}
+                              placeholder="e.g., New York, USA"
+                            />
+                            {formErrors.location && (
+                              <motion.p 
+                                className="text-red-400 text-sm mt-2 flex items-center"
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                              >
+                                <AlertCircle className="w-4 h-4 mr-1" />
+                                {formErrors.location}
+                              </motion.p>
+                            )}
+                          </div>
+
+                          {/* Description */}
+                          <div>
+                            <label className="block text-sm font-semibold text-white mb-2">
+                              Provider Description *
+                            </label>
+                            <textarea
+                              rows={4}
+                              value={providerForm.description}
+                              onChange={(e) => handleProviderFormChange('description', e.target.value)}
+                              className={`w-full px-4 py-3 bg-white/10 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white placeholder-gray-400 backdrop-blur-sm transition-all duration-300 resize-none ${
+                                formErrors.description 
+                                  ? 'border-red-500/50 focus:ring-red-500' 
+                                  : 'border-purple-500/30'
+                              }`}
+                              placeholder="Describe your storage infrastructure, uptime guarantees, and any special features..."
+                            />
+                            {formErrors.description && (
+                              <motion.p 
+                                className="text-red-400 text-sm mt-2 flex items-center"
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                              >
+                                <AlertCircle className="w-4 h-4 mr-1" />
+                                {formErrors.description}
+                              </motion.p>
+                            )}
+                          </div>
+
+                          {/* Form Actions */}
+                          <div className="flex flex-col sm:flex-row gap-4 pt-6">
+                            <motion.button
+                              type="button"
+                              onClick={() => setShowProviderForm(false)}
+                              className="flex-1 px-6 py-3 bg-white/10 text-gray-300 font-semibold rounded-xl hover:bg-white/20 transition-all duration-300 border border-gray-500/30"
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              Cancel
+                            </motion.button>
+                            <motion.button
+                              type="submit"
+                              disabled={registeringProvider}
+                              className={`flex-1 px-6 py-3 font-semibold rounded-xl transition-all duration-300 flex items-center justify-center ${
+                                registeringProvider
+                                  ? 'bg-gray-600 cursor-not-allowed text-gray-300'
+                                  : 'bg-gradient-to-r from-purple-500 to-cyan-400 text-white hover:shadow-lg border border-purple-400/30'
+                              }`}
+                              whileHover={!registeringProvider ? { scale: 1.02 } : {}}
+                              whileTap={!registeringProvider ? { scale: 0.98 } : {}}
+                            >
+                              {registeringProvider ? (
+                                <>
+                                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                                  Registering...
+                                </>
+                              ) : (
+                                <>
+                                  <CheckCircle className="w-5 h-5 mr-2" />
+                                  Register as Provider
+                                </>
+                              )}
+                            </motion.button>
+                          </div>
+                        </form>
                       </div>
                     </motion.div>
                   )}
-                </motion.div>
+                </div>
               ) : (
-                <div>
-                  <h2 className="text-3xl font-bold mb-8 text-white">Provider Dashboard</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 backdrop-blur-xl p-6 rounded-xl border border-green-500/20">
+                /* Provider Dashboard */
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                >
+                  <div className="flex items-center justify-between mb-8">
+                    <div>
+                      <h2 className="text-3xl font-bold text-white mb-2">Provider Dashboard</h2>
+                      <p className="text-gray-300">Monitor your storage provider performance and earnings</p>
+                    </div>
+                    <div className="flex items-center bg-green-500/10 px-4 py-2 rounded-xl border border-green-500/30">
+                      <Shield className="w-5 h-5 text-green-400 mr-2" />
+                      <span className="text-green-400 font-semibold">Active Provider</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <motion.div 
+                      className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 backdrop-blur-xl p-6 rounded-xl border border-green-500/20"
+                      whileHover={{ scale: 1.02, borderColor: "rgba(34, 197, 94, 0.4)" }}
+                    >
                       <div className="flex items-center">
                         <Coins className="w-8 h-8 text-green-400 mr-3" />
                         <div>
@@ -1212,8 +1542,11 @@ export default function AuthenticatedDashboard() {
                           <div className="text-sm text-gray-300">Total Earnings</div>
                         </div>
                       </div>
-                    </div>
-                    <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 backdrop-blur-xl p-6 rounded-xl border border-blue-500/20">
+                    </motion.div>
+                    <motion.div 
+                      className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 backdrop-blur-xl p-6 rounded-xl border border-blue-500/20"
+                      whileHover={{ scale: 1.02, borderColor: "rgba(59, 130, 246, 0.4)" }}
+                    >
                       <div className="flex items-center">
                         <Server className="w-8 h-8 text-blue-400 mr-3" />
                         <div>
@@ -1223,8 +1556,11 @@ export default function AuthenticatedDashboard() {
                           <div className="text-sm text-gray-300">Storage Provided</div>
                         </div>
                       </div>
-                    </div>
-                    <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 backdrop-blur-xl p-6 rounded-xl border border-purple-500/20">
+                    </motion.div>
+                    <motion.div 
+                      className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 backdrop-blur-xl p-6 rounded-xl border border-purple-500/20"
+                      whileHover={{ scale: 1.02, borderColor: "rgba(168, 85, 247, 0.4)" }}
+                    >
                       <div className="flex items-center">
                         <Shield className="w-8 h-8 text-purple-400 mr-3" />
                         <div>
@@ -1234,9 +1570,32 @@ export default function AuthenticatedDashboard() {
                           <div className="text-sm text-gray-300">Reputation Score</div>
                         </div>
                       </div>
+                    </motion.div>
+                  </div>
+
+                  {/* Additional Provider Info */}
+                  <div className="bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-xl rounded-xl p-6 border border-purple-500/20">
+                    <h3 className="text-xl font-semibold text-white mb-4">Provider Information</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <div className="text-sm text-gray-400 mb-1">Status</div>
+                        <div className="text-green-400 font-semibold">Active & Online</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-gray-400 mb-1">Uptime</div>
+                        <div className="text-white font-semibold">99.9%</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-gray-400 mb-1">Files Hosted</div>
+                        <div className="text-white font-semibold">0</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-gray-400 mb-1">Monthly Revenue</div>
+                        <div className="text-cyan-400 font-semibold">0 STOR</div>
+                      </div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               )}
             </motion.div>
           )}
