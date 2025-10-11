@@ -58,7 +58,7 @@ export default function Home() {
 
   // Show authentication page if user clicked get started
   if (showAuth) {
-    return <AuthPage onAuthSuccess={() => setShowAuth(false)} />;
+    return <AuthPage onAuthSuccess={() => setShowAuth(false)} onBack={() => setShowAuth(false)} />;
   }
 
   // Show landing page for unauthenticated users

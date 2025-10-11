@@ -995,10 +995,24 @@ export default function AuthenticatedDashboard() {
               whileTap={{ scale: 0.95 }}
             >
               {userProfile.photoURL ? (
-                <img src={userProfile.photoURL} alt="Profile" className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-purple-400" />
-              ) : (
-                <User className="w-6 h-6 sm:w-8 sm:h-8 text-gray-300" />
-              )}
+                <img 
+                  src={userProfile.photoURL} 
+                  alt="Profile" 
+                  className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-purple-400"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const fallback = target.nextElementSibling as HTMLElement;
+                    if (fallback) fallback.style.display = 'flex';
+                  }}
+                />
+              ) : null}
+              <div 
+                className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-purple-400 bg-gradient-to-r from-purple-500 to-cyan-400 flex items-center justify-center ${userProfile.photoURL ? 'hidden' : 'flex'}`}
+                style={{ display: userProfile.photoURL ? 'none' : 'flex' }}
+              >
+                <User className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+              </div>
               <LogOut className="w-4 h-4 sm:w-5 sm:h-5 text-red-400" />
             </motion.button>
           </div>
@@ -1665,12 +1679,24 @@ export default function AuthenticatedDashboard() {
                     <div className="space-y-4">
                       <div className="flex items-center">
                         {userProfile.photoURL ? (
-                          <img src={userProfile.photoURL} alt="Profile" className="w-16 h-16 rounded-full mr-4 border-2 border-purple-400" />
-                        ) : (
-                          <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-cyan-400 rounded-full flex items-center justify-center mr-4">
-                            <User className="w-8 h-8 text-white" />
-                          </div>
-                        )}
+                          <img 
+                            src={userProfile.photoURL} 
+                            alt="Profile" 
+                            className="w-16 h-16 rounded-full mr-4 border-2 border-purple-400"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const fallback = target.nextElementSibling as HTMLElement;
+                              if (fallback) fallback.style.display = 'flex';
+                            }}
+                          />
+                        ) : null}
+                        <div 
+                          className={`w-16 h-16 bg-gradient-to-r from-purple-500 to-cyan-400 rounded-full flex items-center justify-center mr-4 border-2 border-purple-400 ${userProfile.photoURL ? 'hidden' : 'flex'}`}
+                          style={{ display: userProfile.photoURL ? 'none' : 'flex' }}
+                        >
+                          <User className="w-8 h-8 text-white" />
+                        </div>
                         <div>
                           <h4 className="text-lg font-medium text-white">{userProfile.displayName}</h4>
                           <p className="text-gray-300">{userProfile.email}</p>

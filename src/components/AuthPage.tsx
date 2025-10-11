@@ -16,15 +16,17 @@ import {
   Loader2,
   AlertCircle,
   Sparkles,
-  Zap
+  Zap,
+  ArrowLeft
 } from 'lucide-react';
 import Hyperspeed from './Hyperspeed';
 
 interface AuthPageProps {
   onAuthSuccess: () => void;
+  onBack?: () => void;
 }
 
-export default function AuthPage({ onAuthSuccess }: AuthPageProps) {
+export default function AuthPage({ onAuthSuccess, onBack }: AuthPageProps) {
   const { 
     user, 
     loading,
@@ -171,7 +173,7 @@ export default function AuthPage({ onAuthSuccess }: AuthPageProps) {
   }
 
   return (
-    <div className="min-h-screen w-full bg-black text-white flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen w-full bg-black text-white flex items-center justify-center px-3 sm:px-4 py-4 sm:py-8 relative overflow-hidden">
       {/* Hyperspeed Background */}
       <div className="absolute inset-0 w-full h-full min-h-screen">
         <Hyperspeed
@@ -197,23 +199,38 @@ export default function AuthPage({ onAuthSuccess }: AuthPageProps) {
       {/* Overlay for better readability */}
       <div className="absolute inset-0 w-full h-full min-h-screen bg-gradient-to-b from-black/40 via-transparent to-black/60" style={{ zIndex: 2 }}></div>
 
-      <div className="max-w-md w-full relative z-10">
+      {/* Back Button */}
+      {onBack && (
+        <motion.button
+          onClick={onBack}
+          className="fixed top-4 sm:top-6 left-4 sm:left-6 z-20 bg-white/10 backdrop-blur-xl border border-purple-500/30 rounded-xl p-2 sm:p-3 text-white hover:bg-white/20 transition-all duration-300 shadow-lg"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          whileHover={{ scale: 1.05, borderColor: "rgba(168, 85, 247, 0.6)" }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+        </motion.button>
+      )}
+
+      <div className="max-w-sm sm:max-w-md w-full relative z-10">
         {/* Header */}
         <motion.div 
-          className="text-center mb-8"
+          className="text-center mb-6 sm:mb-8"
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
           <motion.div 
-            className="w-20 h-20 bg-gradient-to-r from-purple-500 to-cyan-400 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-purple-500/25"
+            className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-purple-500 to-cyan-400 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-2xl shadow-purple-500/25"
             whileHover={{ scale: 1.1, rotate: 5 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
-            <Shield className="w-10 h-10 text-white" />
+            <Shield className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
           </motion.div>
           <motion.h1 
-            className="text-4xl md:text-5xl font-black mb-3 bg-gradient-to-r from-white via-purple-200 to-cyan-200 bg-clip-text text-transparent"
+            className="text-3xl sm:text-4xl md:text-5xl font-black mb-2 sm:mb-3 bg-gradient-to-r from-white via-purple-200 to-cyan-200 bg-clip-text text-transparent"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
@@ -221,7 +238,7 @@ export default function AuthPage({ onAuthSuccess }: AuthPageProps) {
             Web3 Dropbox
           </motion.h1>
           <motion.p 
-            className="text-gray-300 text-lg"
+            className="text-gray-300 text-base sm:text-lg px-2"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.4 }}
@@ -236,7 +253,7 @@ export default function AuthPage({ onAuthSuccess }: AuthPageProps) {
 
         {/* Auth Form */}
         <motion.div 
-          className="bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-xl rounded-2xl shadow-2xl border border-purple-500/20 p-8"
+          className="bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-xl rounded-xl sm:rounded-2xl shadow-2xl border border-purple-500/20 p-4 sm:p-6 lg:p-8"
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
@@ -461,29 +478,29 @@ export default function AuthPage({ onAuthSuccess }: AuthPageProps) {
 
         {/* Features */}
         <motion.div 
-          className="mt-8 grid grid-cols-1 gap-4 text-sm"
+          className="mt-6 sm:mt-8 grid grid-cols-1 gap-3 sm:gap-4 text-sm"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
         >
           <motion.div 
-            className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 backdrop-blur-sm p-6 rounded-xl border border-green-500/20 flex items-center"
+            className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 backdrop-blur-sm p-4 sm:p-6 rounded-xl border border-green-500/20 flex items-center"
             whileHover={{ scale: 1.02, borderColor: "rgba(34, 197, 94, 0.4)" }}
           >
-            <Shield className="w-6 h-6 text-green-400 mr-4" />
+            <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-green-400 mr-3 sm:mr-4 flex-shrink-0" />
             <div>
-              <div className="font-semibold text-white">End-to-End Encrypted</div>
-              <div className="text-gray-300">Your files are encrypted before upload</div>
+              <div className="font-semibold text-white text-sm sm:text-base">End-to-End Encrypted</div>
+              <div className="text-gray-300 text-xs sm:text-sm">Your files are encrypted before upload</div>
             </div>
           </motion.div>
           <motion.div 
-            className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 backdrop-blur-sm p-6 rounded-xl border border-blue-500/20 flex items-center"
+            className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 backdrop-blur-sm p-4 sm:p-6 rounded-xl border border-blue-500/20 flex items-center"
             whileHover={{ scale: 1.02, borderColor: "rgba(59, 130, 246, 0.4)" }}
           >
-            <User className="w-6 h-6 text-blue-400 mr-4" />
+            <User className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400 mr-3 sm:mr-4 flex-shrink-0" />
             <div>
-              <div className="font-semibold text-white">5GB Free Storage</div>
-              <div className="text-gray-300">Start with generous free tier</div>
+              <div className="font-semibold text-white text-sm sm:text-base">5GB Free Storage</div>
+              <div className="text-gray-300 text-xs sm:text-sm">Start with generous free tier</div>
             </div>
           </motion.div>
         </motion.div>
