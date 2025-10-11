@@ -880,17 +880,17 @@ export default function AuthenticatedDashboard() {
         )}
       </AnimatePresence>
 
-      <div className="container mx-auto px-4 py-8 relative z-10">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 relative z-10">
         {/* Header */}
         <motion.div 
-          className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-6"
+          className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 sm:mb-8 gap-4 sm:gap-6"
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          <div>
+          <div className="w-full lg:w-auto">
             <motion.h1 
-              className="text-4xl md:text-5xl font-black mb-2 bg-gradient-to-r from-white via-purple-200 to-cyan-200 bg-clip-text text-transparent"
+              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black mb-1 sm:mb-2 bg-gradient-to-r from-white via-purple-200 to-cyan-200 bg-clip-text text-transparent"
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
@@ -898,7 +898,7 @@ export default function AuthenticatedDashboard() {
               Web3 Dropbox
             </motion.h1>
             <motion.p 
-              className="text-gray-300 text-lg"
+              className="text-gray-300 text-sm sm:text-base lg:text-lg"
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.3 }}
@@ -907,22 +907,22 @@ export default function AuthenticatedDashboard() {
             </motion.p>
           </div>
           
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 sm:gap-4 w-full lg:w-auto">
             {/* Storage Usage */}
             <motion.div 
-              className="bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-xl px-6 py-4 rounded-xl border border-purple-500/20 shadow-lg"
+              className="bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-xl px-3 sm:px-4 lg:px-6 py-3 sm:py-4 rounded-xl border border-purple-500/20 shadow-lg flex-1 sm:flex-none min-w-0"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              whileHover={{ scale: 1.05, borderColor: "rgba(168, 85, 247, 0.4)" }}
+              whileHover={{ scale: 1.02, borderColor: "rgba(168, 85, 247, 0.4)" }}
             >
-              <div className="text-sm text-gray-300 mb-1">Storage Used</div>
-              <div className="font-bold text-white">
+              <div className="text-xs sm:text-sm text-gray-300 mb-1">Storage Used</div>
+              <div className="font-bold text-white text-sm sm:text-base">
                 {formatStorageSize(userProfile.storageUsed)} / {formatStorageSize(userProfile.storageLimit)}
               </div>
-              <div className="w-full bg-gray-700 rounded-full h-2 mt-2">
+              <div className="w-full bg-gray-700 rounded-full h-1.5 sm:h-2 mt-2">
                 <motion.div 
-                  className="bg-gradient-to-r from-purple-500 to-cyan-400 h-2 rounded-full" 
+                  className="bg-gradient-to-r from-purple-500 to-cyan-400 h-1.5 sm:h-2 rounded-full" 
                   initial={{ width: 0 }}
                   animate={{ width: `${calculateStoragePercentage(userProfile.storageUsed, userProfile.storageLimit)}%` }}
                   transition={{ duration: 1, delay: 0.8 }}
@@ -933,53 +933,53 @@ export default function AuthenticatedDashboard() {
             {/* Token Balance */}
             {isConnected && (
               <motion.div 
-                className="bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-xl px-6 py-4 rounded-xl border border-cyan-500/20 shadow-lg"
+                className="bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-xl px-3 sm:px-4 lg:px-6 py-3 sm:py-4 rounded-xl border border-cyan-500/20 shadow-lg flex-1 sm:flex-none min-w-0"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.8, delay: 0.5 }}
-                whileHover={{ scale: 1.05, borderColor: "rgba(6, 182, 212, 0.4)" }}
+                whileHover={{ scale: 1.02, borderColor: "rgba(6, 182, 212, 0.4)" }}
               >
-                <div className="text-sm text-gray-300 mb-1">Balance</div>
-                <div className="font-bold text-cyan-400 flex items-center">
-                  <Coins className="w-4 h-4 mr-2" />
+                <div className="text-xs sm:text-sm text-gray-300 mb-1">Balance</div>
+                <div className="font-bold text-cyan-400 flex items-center text-sm sm:text-base">
+                  <Coins className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                   {formatTokens(tokenBalance?.formatted || '0')}
                 </div>
               </motion.div>
             )}
 
             {/* Wallet Connection */}
-            <div className="flex items-center space-x-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
               {userProfile.walletAddress ? (
                 <motion.div 
-                  className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 backdrop-blur-xl px-4 py-3 rounded-xl border border-green-500/30 flex items-center"
+                  className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 backdrop-blur-xl px-3 sm:px-4 py-2 sm:py-3 rounded-xl border border-green-500/30 flex items-center justify-center sm:justify-start"
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.8, delay: 0.6 }}
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{ scale: 1.02 }}
                 >
-                  <CheckCircle className="w-5 h-5 text-green-400 mr-2" />
-                  <span className="text-sm text-green-200 font-semibold">Wallet Linked</span>
+                  <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-400 mr-2" />
+                  <span className="text-xs sm:text-sm text-green-200 font-semibold">Wallet Linked</span>
                 </motion.div>
               ) : isConnected ? (
                 <motion.button
                   onClick={handleLinkWallet}
                   disabled={linkingWallet}
-                  className="bg-gradient-to-r from-purple-500 to-cyan-400 text-white px-6 py-3 rounded-xl font-semibold flex items-center disabled:opacity-50 shadow-lg border border-purple-400/30"
+                  className="bg-gradient-to-r from-purple-500 to-cyan-400 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-semibold flex items-center justify-center disabled:opacity-50 shadow-lg border border-purple-400/30 text-sm sm:text-base"
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.8, delay: 0.6 }}
-                  whileHover={{ scale: 1.05, boxShadow: "0 10px 30px rgba(168, 85, 247, 0.3)" }}
+                  whileHover={{ scale: 1.02, boxShadow: "0 10px 30px rgba(168, 85, 247, 0.3)" }}
                   whileTap={{ scale: 0.95 }}
                 >
                   {linkingWallet ? (
-                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                    <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin mr-2" />
                   ) : (
-                    <Link className="w-5 h-5 mr-2" />
+                    <Link className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                   )}
                   Link Wallet
                 </motion.button>
               ) : null}
-              <div className="[&>div]:bg-white/10 [&>div]:backdrop-blur-xl [&>div]:border [&>div]:border-purple-500/20 [&>div]:rounded-xl">
+              <div className="[&>div]:bg-white/10 [&>div]:backdrop-blur-xl [&>div]:border [&>div]:border-purple-500/20 [&>div]:rounded-xl [&>div]:text-sm [&>div]:sm:text-base">
                 <ConnectButton />
               </div>
             </div>
@@ -987,31 +987,31 @@ export default function AuthenticatedDashboard() {
             {/* User Menu */}
             <motion.button
               onClick={handleSignOut}
-              className="flex items-center space-x-3 bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-xl px-4 py-3 rounded-xl border border-red-500/20 hover:border-red-500/40 transition-all duration-300 shadow-lg"
+              className="flex items-center justify-center sm:justify-start space-x-2 sm:space-x-3 bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-xl px-3 sm:px-4 py-2 sm:py-3 rounded-xl border border-red-500/20 hover:border-red-500/40 transition-all duration-300 shadow-lg"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.7 }}
-              whileHover={{ scale: 1.05, backgroundColor: "rgba(239, 68, 68, 0.1)" }}
+              whileHover={{ scale: 1.02, backgroundColor: "rgba(239, 68, 68, 0.1)" }}
               whileTap={{ scale: 0.95 }}
             >
               {userProfile.photoURL ? (
-                <img src={userProfile.photoURL} alt="Profile" className="w-8 h-8 rounded-full border-2 border-purple-400" />
+                <img src={userProfile.photoURL} alt="Profile" className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-purple-400" />
               ) : (
-                <User className="w-8 h-8 text-gray-300" />
+                <User className="w-6 h-6 sm:w-8 sm:h-8 text-gray-300" />
               )}
-              <LogOut className="w-5 h-5 text-red-400" />
+              <LogOut className="w-4 h-4 sm:w-5 sm:h-5 text-red-400" />
             </motion.button>
           </div>
         </motion.div>
 
         {/* Navigation Tabs */}
         <motion.div 
-          className="bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-xl rounded-2xl shadow-2xl border border-purple-500/20 mb-8"
+          className="bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-xl rounded-xl sm:rounded-2xl shadow-2xl border border-purple-500/20 mb-6 sm:mb-8"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
         >
-          <div className="flex flex-wrap border-b border-purple-500/20">
+          <div className="flex border-b border-purple-500/20 overflow-x-auto scrollbar-hide">
             {[
               { id: 'files', icon: File, label: 'My Files' },
               { id: 'provider', icon: Server, label: 'Storage Provider' },
@@ -1021,7 +1021,7 @@ export default function AuthenticatedDashboard() {
               <motion.button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as 'files' | 'provider' | 'marketplace' | 'profile')}
-                className={`px-6 py-4 font-semibold transition-all duration-300 flex items-center space-x-2 ${
+                className={`px-3 sm:px-4 lg:px-6 py-3 sm:py-4 font-semibold transition-all duration-300 flex items-center justify-center sm:justify-start space-x-1 sm:space-x-2 whitespace-nowrap flex-shrink-0 min-w-0 ${
                   activeTab === tab.id
                     ? 'text-white border-b-2 border-purple-400 bg-purple-500/20'
                     : 'text-gray-300 hover:text-white hover:bg-white/10'
@@ -1032,8 +1032,8 @@ export default function AuthenticatedDashboard() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
               >
-                <tab.icon className="w-5 h-5" />
-                <span className="hidden sm:inline">{tab.label}</span>
+                <tab.icon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                <span className="text-xs sm:text-sm lg:text-base hidden xs:inline">{tab.label}</span>
               </motion.button>
             ))}
           </div>
@@ -1041,29 +1041,29 @@ export default function AuthenticatedDashboard() {
           {/* Files Tab */}
           {activeTab === 'files' && (
             <motion.div 
-              className="p-8"
+              className="p-4 sm:p-6 lg:p-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
               {/* Upload Section */}
               <motion.div 
-                className="bg-gradient-to-r from-white/5 to-white/10 backdrop-blur-xl rounded-2xl p-8 mb-8 border border-purple-500/20"
+                className="bg-gradient-to-r from-white/5 to-white/10 backdrop-blur-xl rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8 border border-purple-500/20"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
-                <div className="border-2 border-dashed border-purple-400/30 rounded-2xl p-8 text-center hover:border-purple-400/50 transition-colors">
+                <div className="border-2 border-dashed border-purple-400/30 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 text-center hover:border-purple-400/50 transition-colors">
                   <motion.div
                     initial={{ scale: 0.8 }}
                     animate={{ scale: 1 }}
                     transition={{ duration: 0.5, delay: 0.3 }}
                   >
-                    <Upload className="mx-auto h-16 w-16 text-purple-400 mb-6" />
-                    <h3 className="text-2xl font-bold text-white mb-3">
+                    <Upload className="mx-auto h-12 w-12 sm:h-14 sm:w-14 lg:h-16 lg:w-16 text-purple-400 mb-4 sm:mb-6" />
+                    <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-white mb-2 sm:mb-3">
                       Upload to Decentralized Storage
                     </h3>
-                    <p className="text-gray-300 mb-6 text-lg">
+                    <p className="text-gray-300 mb-4 sm:mb-6 text-sm sm:text-base lg:text-lg">
                       Files are encrypted, chunked, and distributed across multiple providers
                     </p>
                   </motion.div>
@@ -1071,14 +1071,14 @@ export default function AuthenticatedDashboard() {
                   {/* Storage Warning */}
                   {calculateStoragePercentage(userProfile.storageUsed, userProfile.storageLimit) > 80 && (
                     <motion.div 
-                      className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl backdrop-blur-sm"
+                      className="mb-4 sm:mb-6 p-3 sm:p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl backdrop-blur-sm"
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.3 }}
                     >
                       <div className="flex items-center justify-center">
-                        <AlertCircle className="w-5 h-5 text-yellow-400 mr-3" />
-                        <span className="text-yellow-200 font-semibold">
+                        <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 mr-2 sm:mr-3 flex-shrink-0" />
+                        <span className="text-yellow-200 font-semibold text-sm sm:text-base">
                           Storage is {calculateStoragePercentage(userProfile.storageUsed, userProfile.storageLimit)}% full
                         </span>
                       </div>
@@ -1086,31 +1086,31 @@ export default function AuthenticatedDashboard() {
                   )}
                   
                   {/* Encryption Options */}
-                  <div className="mb-8 max-w-md mx-auto">
-                    <div className="flex items-center mb-3">
+                  <div className="mb-6 sm:mb-8 max-w-md mx-auto">
+                    <div className="flex items-center mb-2 sm:mb-3">
                       <input
                         type={showPassword ? 'text' : 'password'}
                         placeholder="Optional encryption password"
                         value={encryptionPassword}
                         onChange={(e) => setEncryptionPassword(e.target.value)}
-                        className="flex-1 px-4 py-3 bg-white/10 border border-purple-500/30 rounded-l-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white placeholder-gray-400 backdrop-blur-sm"
+                        className="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-white/10 border border-purple-500/30 rounded-l-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white placeholder-gray-400 backdrop-blur-sm text-sm sm:text-base"
                       />
                       <button
                         onClick={() => setShowPassword(!showPassword)}
-                        className="px-4 py-3 border border-l-0 border-purple-500/30 rounded-r-xl hover:bg-white/10 text-purple-400 transition-colors"
+                        className="px-3 sm:px-4 py-2 sm:py-3 border border-l-0 border-purple-500/30 rounded-r-xl hover:bg-white/10 text-purple-400 transition-colors"
                       >
-                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        {showPassword ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
                       </button>
                     </div>
-                    <p className="text-sm text-gray-400">
+                    <p className="text-xs sm:text-sm text-gray-400">
                       Leave empty for automatic key generation
                     </p>
                   </div>
 
                   <motion.label 
                     className="cursor-pointer"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
                     <input
                       type="file"
@@ -1118,19 +1118,20 @@ export default function AuthenticatedDashboard() {
                       onChange={handleFileUpload}
                       disabled={uploading}
                     />
-                    <span className={`inline-flex items-center px-8 py-4 border border-transparent text-lg font-bold rounded-xl text-white shadow-2xl transition-all duration-300 ${
+                    <span className={`inline-flex items-center px-4 sm:px-6 lg:px-8 py-3 sm:py-4 border border-transparent text-sm sm:text-base lg:text-lg font-bold rounded-xl text-white shadow-2xl transition-all duration-300 ${
                       uploading 
                         ? 'bg-gray-600 cursor-not-allowed' 
                         : 'bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-400 hover:shadow-purple-500/30 border border-purple-400/30'
                     }`}>
                       {uploading ? (
                         <>
-                          <Loader2 className="w-6 h-6 animate-spin mr-3" />
-                          Uploading to IPFS...
+                          <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 animate-spin mr-2 sm:mr-3" />
+                          <span className="hidden sm:inline">Uploading to IPFS...</span>
+                          <span className="sm:hidden">Uploading...</span>
                         </>
                       ) : (
                         <>
-                          <Zap className="w-6 h-6 mr-3" />
+                          <Zap className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 mr-2 sm:mr-3" />
                           Choose File
                         </>
                       )}
@@ -1145,70 +1146,77 @@ export default function AuthenticatedDashboard() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
               >
-                <h2 className="text-2xl font-bold mb-6 text-white">Your Files ({files.length})</h2>
-                <div className="space-y-4">
+                <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-white">Your Files ({files.length})</h2>
+                <div className="space-y-3 sm:space-y-4">
                   {files.length === 0 ? (
                     <motion.div 
-                      className="text-center py-16 text-gray-400"
+                      className="text-center py-12 sm:py-16 text-gray-400"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.8, delay: 0.6 }}
                     >
-                      <File className="mx-auto h-16 w-16 text-gray-500 mb-6" />
-                      <p className="text-xl mb-2">No files uploaded yet</p>
-                      <p className="text-gray-500">Upload your first file to get started with decentralized storage!</p>
+                      <File className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-gray-500 mb-4 sm:mb-6" />
+                      <p className="text-lg sm:text-xl mb-2">No files uploaded yet</p>
+                      <p className="text-gray-500 text-sm sm:text-base px-4">Upload your first file to get started with decentralized storage!</p>
                     </motion.div>
                   ) : (
                     files.map((file, index) => (
                       <motion.div 
                         key={file.id} 
-                        className="bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-xl border border-purple-500/20 rounded-xl p-6 hover:border-purple-400/40 transition-all duration-300 shadow-lg"
+                        className="bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-xl border border-purple-500/20 rounded-xl p-4 sm:p-6 hover:border-purple-400/40 transition-all duration-300 shadow-lg"
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
-                        whileHover={{ scale: 1.02, boxShadow: "0 10px 30px rgba(168, 85, 247, 0.2)" }}
+                        whileHover={{ scale: 1.01, boxShadow: "0 10px 30px rgba(168, 85, 247, 0.2)" }}
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-cyan-400 rounded-xl flex items-center justify-center mr-4">
-                              <File className="h-6 w-6 text-white" />
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+                          <div className="flex items-center min-w-0 flex-1">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-purple-500 to-cyan-400 rounded-xl flex items-center justify-center mr-3 sm:mr-4 flex-shrink-0">
+                              <File className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                             </div>
-                            <div>
-                              <h3 className="text-lg font-semibold text-white mb-1">{file.name}</h3>
-                              <div className="text-sm text-gray-300 space-x-4 mb-2">
-                                <span>{formatStorageSize(file.size)}</span>
-                                <span>•</span>
-                                <span>{file.chunks} chunks</span>
-                                <span>•</span>
-                                <span>Uploaded {file.uploadDate}</span>
+                            <div className="min-w-0 flex-1">
+                              <h3 className="text-base sm:text-lg font-semibold text-white mb-1 truncate">{file.name}</h3>
+                              <div className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2">
+                                <div className="flex flex-wrap items-center gap-1 sm:gap-2">
+                                  <span>{formatStorageSize(file.size)}</span>
+                                  <span className="hidden sm:inline">•</span>
+                                  <span className="hidden sm:inline">{file.chunks} chunks</span>
+                                  <span className="hidden sm:inline">•</span>
+                                  <span className="hidden sm:inline">Uploaded {file.uploadDate}</span>
+                                </div>
+                                <div className="sm:hidden text-gray-400 mt-1">
+                                  {file.chunks} chunks • {file.uploadDate}
+                                </div>
                               </div>
-                              <div className="text-xs text-gray-400 font-mono">
-                                IPFS: {file.ipfsHash.substring(0, 20)}...
+                              <div className="text-xs text-gray-400 font-mono truncate">
+                                IPFS: {file.ipfsHash.substring(0, 15)}...
                               </div>
                             </div>
                           </div>
-                          <div className="flex items-center space-x-3">
-                            <div className="flex items-center text-sm text-green-400 bg-green-500/10 px-3 py-1 rounded-full border border-green-500/30">
-                              <Lock className="w-4 h-4 mr-2" />
+                          <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 sm:flex-shrink-0">
+                            <div className="flex items-center justify-center text-xs sm:text-sm text-green-400 bg-green-500/10 px-2 sm:px-3 py-1 rounded-full border border-green-500/30">
+                              <Lock className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                               Encrypted
                             </div>
-                            <motion.button
-                              onClick={() => handleDownload(file)}
-                              className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-cyan-400 text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-300 border border-purple-400/30"
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                            >
-                              <Download className="h-4 w-4 mr-2" />
-                              Download
-                            </motion.button>
-                            <motion.button 
-                              className="inline-flex items-center px-4 py-2 bg-white/10 text-gray-300 font-semibold rounded-lg hover:bg-white/20 transition-all duration-300 border border-gray-500/30"
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                            >
-                              <Share2 className="h-4 w-4 mr-2" />
-                              Share
-                            </motion.button>
+                            <div className="flex space-x-2 sm:space-x-3">
+                              <motion.button
+                                onClick={() => handleDownload(file)}
+                                className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-gradient-to-r from-purple-500 to-cyan-400 text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-300 border border-purple-400/30 text-xs sm:text-sm"
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                              >
+                                <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                                Download
+                              </motion.button>
+                              <motion.button 
+                                className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-white/10 text-gray-300 font-semibold rounded-lg hover:bg-white/20 transition-all duration-300 border border-gray-500/30 text-xs sm:text-sm"
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                              >
+                                <Share2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                                Share
+                              </motion.button>
+                            </div>
                           </div>
                         </div>
                       </motion.div>
@@ -1241,9 +1249,9 @@ export default function AuthenticatedDashboard() {
                         animate={{ scale: 1 }}
                         transition={{ duration: 0.5, delay: 0.3 }}
                       >
-                        <Server className="mx-auto h-20 w-20 text-purple-400 mb-6" />
-                        <h2 className="text-3xl font-bold text-white mb-4">Become a Storage Provider</h2>
-                        <p className="text-gray-300 mb-8 max-w-2xl mx-auto text-lg">
+                        <Server className="mx-auto h-16 w-16 sm:h-20 sm:w-20 text-purple-400 mb-4 sm:mb-6" />
+                        <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3 sm:mb-4">Become a Storage Provider</h2>
+                        <p className="text-gray-300 mb-6 sm:mb-8 max-w-2xl mx-auto text-base sm:text-lg px-4">
                           Join the decentralized storage network and earn STOR tokens by providing storage space. 
                           Help build the future of distributed file storage while generating passive income.
                         </p>
@@ -1251,25 +1259,25 @@ export default function AuthenticatedDashboard() {
 
                       {/* Benefits Grid */}
                       <motion.div 
-                        className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12"
+                        className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12"
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.4 }}
                       >
-                        <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 backdrop-blur-xl p-6 rounded-xl border border-green-500/20">
-                          <Coins className="w-12 h-12 text-green-400 mx-auto mb-4" />
-                          <h3 className="text-lg font-semibold text-white mb-2">Earn Tokens</h3>
-                          <p className="text-gray-300 text-sm">Get paid in STOR tokens for providing reliable storage space</p>
+                        <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 backdrop-blur-xl p-4 sm:p-6 rounded-xl border border-green-500/20">
+                          <Coins className="w-10 h-10 sm:w-12 sm:h-12 text-green-400 mx-auto mb-3 sm:mb-4" />
+                          <h3 className="text-base sm:text-lg font-semibold text-white mb-2">Earn Tokens</h3>
+                          <p className="text-gray-300 text-xs sm:text-sm">Get paid in STOR tokens for providing reliable storage space</p>
                         </div>
-                        <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 backdrop-blur-xl p-6 rounded-xl border border-blue-500/20">
-                          <Shield className="w-12 h-12 text-blue-400 mx-auto mb-4" />
-                          <h3 className="text-lg font-semibold text-white mb-2">Build Reputation</h3>
-                          <p className="text-gray-300 text-sm">Maintain high uptime and reliability to increase earnings</p>
+                        <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 backdrop-blur-xl p-4 sm:p-6 rounded-xl border border-blue-500/20">
+                          <Shield className="w-10 h-10 sm:w-12 sm:h-12 text-blue-400 mx-auto mb-3 sm:mb-4" />
+                          <h3 className="text-base sm:text-lg font-semibold text-white mb-2">Build Reputation</h3>
+                          <p className="text-gray-300 text-xs sm:text-sm">Maintain high uptime and reliability to increase earnings</p>
                         </div>
-                        <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 backdrop-blur-xl p-6 rounded-xl border border-purple-500/20">
-                          <Users className="w-12 h-12 text-purple-400 mx-auto mb-4" />
-                          <h3 className="text-lg font-semibold text-white mb-2">Join Network</h3>
-                          <p className="text-gray-300 text-sm">Be part of the decentralized storage revolution</p>
+                        <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 backdrop-blur-xl p-4 sm:p-6 rounded-xl border border-purple-500/20">
+                          <Users className="w-10 h-10 sm:w-12 sm:h-12 text-purple-400 mx-auto mb-3 sm:mb-4" />
+                          <h3 className="text-base sm:text-lg font-semibold text-white mb-2">Join Network</h3>
+                          <p className="text-gray-300 text-xs sm:text-sm">Be part of the decentralized storage revolution</p>
                         </div>
                       </motion.div>
 
